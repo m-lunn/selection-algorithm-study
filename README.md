@@ -113,7 +113,6 @@ The full experiment script supports these phases:
 benchmarking/run_all.sh main
 benchmarking/run_all.sh adv
 benchmarking/run_all.sh strings
-benchmarking/run_all.sh params
 benchmarking/run_all.sh all
 ```
 
@@ -123,9 +122,6 @@ The phases write CSV files under `results/`:
 results/main.csv
 results/adversary.csv
 results/strings.csv
-results/params_bfprt.csv
-results/params_fr.csv
-results/params_intro.csv
 ```
 
 They also write `.meta.txt` files containing the environment and command line,

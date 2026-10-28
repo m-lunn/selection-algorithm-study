@@ -180,7 +180,7 @@ def strings_plot(t, c, colors, fname):
         for i in (0, 1):
             axes[i][j].set_xscale("log")
             axes[i][j].set_yscale("log")
-            axes[i][j].set_xlabel("shared prefix length + 1")
+            axes[i][j].set_xlabel("shared prefix length")
             axes[i][j].grid(alpha=0.25)
     h, l = axes[0][0].get_legend_handles_labels()
     fig.legend(h, l, loc="lower center", ncol=min(len(l), 5), fontsize=8)

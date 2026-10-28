@@ -96,9 +96,24 @@ int main() {
 
     // 4. Strings with shared prefixes.
     {
-        auto strs = gen::to_strings(gen::random_permutation(500, 8), 30);
-        for (auto& a : algos)
-            for (std::size_t k : {std::size_t{0}, std::size_t{250}, std::size_t{499}}) check(a, strs, k, "strings");
+        const std::size_t n = 500;
+        const std::vector<std::pair<std::string, std::vector<Key>>> inputs = {
+            {"random", gen::random_permutation(n, 8)},
+            {"sorted", gen::sorted(n)},
+            {"reverse", gen::reverse_sorted(n)},
+            {"all_equal", gen::all_equal(n)},
+            {"organ_pipe", gen::organ_pipe(n)},
+            {"few2", gen::few_distinct(n, 2, 8)},
+            {"few100", gen::few_distinct(n, 100, 8)},
+            {"sawtooth100", gen::sawtooth(n, 100)},
+            {"nearly_sorted", gen::nearly_sorted(n, 5, 8)},
+        };
+        for (const auto& [name, ints] : inputs) {
+            auto strs = gen::to_strings(ints, 30);
+            for (auto& a : algos)
+                for (std::size_t k : {std::size_t{0}, n / 2, n - 1})
+                    check(a, strs, k, "strings/" + name);
+        }
     }
 
     // 5. Introselect with depth 0 must actually take its fallback path.
