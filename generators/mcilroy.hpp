@@ -20,8 +20,8 @@
 //   * The attack is specific to the algorithm AND its parameters (pivot rule,
 //     cutoff, k, n). The frozen array is just ordinary data for every other
 //     algorithm, so replay it against all of them.
-//   * Randomized algorithms (random pivot, Floyd-Rivest sampling) only get
-//     attacked for the seed you ran; the replay is not adversarial in general.
+//   * Randomized algorithms only get attacked for the exact RNG seed used
+//     during generation; changing the seed generally invalidates the attack.
 //   * Algorithms that call std::sort / insertion sort on small pieces are fine;
 //     the adversary just answers those comparisons too.
 //   * Remaining gas elements at the end are given the largest values, in id
@@ -29,7 +29,6 @@
 //
 // USAGE
 //   auto res = gen::mcilroy_adversary(n, k, [](int* a, size_t n, size_t k, auto less) {
-//       my_quickselect_median3(a, n, k, less);   // `less(x, y)` -> bool on ids
 //   });
 //   std::vector<gen::Key> input = res.input;     // freeze and replay
 //

@@ -25,7 +25,7 @@
 #include <sched.h>
 #endif
 
-#include "algorithms/registry.hpp"
+#include "registry.hpp"
 #include "benchmarking/counting.hpp"
 #include "generators/generators.hpp"
 #include "generators/mcilroy.hpp"
@@ -45,7 +45,7 @@ struct Options {
     std::vector<std::string> families = {"random"};
     std::vector<std::size_t> sizes = {100000};
     std::vector<std::string> ranks = {"median"};
-    std::vector<std::string> algos = {"qs_random", "qs_m3", "bfprt", "floyd_rivest",
+    std::vector<std::string> algos = {"qs_random", "bfprt", "floyd_rivest",
                                       "introselect", "std_nth"};
     std::vector<std::size_t> prefixes = {0};  // string type only
     int reps = 11;
@@ -67,7 +67,7 @@ static void usage() {
         "  --type int|string          element type (default int)\n"
         "  --families a,b,...         e.g. random,sorted,reverse,all_equal,organ_pipe,\n"
         "                             few_distinct:2,sawtooth:100,nearly_sorted:0.01,\n"
-        "                             mcilroy:<algo spec>   (adversary vs a deterministic algo)\n"
+        "                             mcilroy:<algo spec>   (adversary for the configured seed)\n"
         "  --sizes n1,n2,...          accepts 1e5 notation\n"
         "  --ranks r1,r2,...          min,p1,p25,median,p75,p99,max or q<fraction> e.g. q0.9\n"
         "  --algos a1,a2,...          specs such as bfprt:g=3, floyd_rivest:thr=300 (see registry.hpp)\n"
@@ -203,17 +203,15 @@ static std::string sanitize(std::string s) {
     return s;
 }
 
-// McIlroy adversary against `algo_spec` for size n and rank k, cached on disk so
-// the SAME frozen array is replayed against every algorithm (and across runs).
+// McIlroy adversary against `algo_spec` for one known RNG seed. The seed is
+// part of the cache key and is restored before both generation and replay.
 static bool adversary_ints(const Options& o, const std::string& algo_spec, std::size_t n,
-                           std::size_t k, std::vector<Key>& out) {
+                           std::size_t k, std::uint64_t seed, std::vector<Key>& out) {
     if (n > o.max_adv_n) return false;
     sel::Algo target = sel::parse_algo(algo_spec);
-    if (!target.deterministic())
-        throw std::invalid_argument("adversary needs a deterministic algorithm: " + algo_spec);
     fs::create_directories(o.advdir);
     std::string path = o.advdir + "/mcilroy_" + sanitize(algo_spec) + "_n" + std::to_string(n) +
-                       "_k" + std::to_string(k) + ".bin";
+                       "_k" + std::to_string(k) + "_seed" + std::to_string(seed) + ".bin";
     if (fs::exists(path)) {
         std::ifstream f(path, std::ios::binary);
         std::uint64_t cnt = 0;
@@ -222,8 +220,10 @@ static bool adversary_ints(const Options& o, const std::string& algo_spec, std::
         f.read(reinterpret_cast<char*>(out.data()), cnt * sizeof(Key));
         if (f && cnt == n) return true;
     }
-    std::fprintf(stderr, "  [adversary] generating vs %s, n=%zu, k=%zu ...\n", algo_spec.c_str(), n, k);
+    std::fprintf(stderr, "  [adversary] generating vs %s, n=%zu, k=%zu, seed=%llu ...\n",
+                 algo_spec.c_str(), n, k, static_cast<unsigned long long>(seed));
     auto res = gen::mcilroy_adversary(n, k, [&](int* a, std::size_t nn, std::size_t kk, auto less) {
+        sel::seed_rng(seed);
         target(a, nn, kk, less);
     });
     out = std::move(res.input);
@@ -272,11 +272,14 @@ static int run_suite(const Options& o, std::ofstream& csv) {
                         // ---- build (or reuse) the input instance
                         std::string key = fam.label + "|" + std::to_string(n) + "|" +
                                           std::to_string(seed) + "|" + std::to_string(prefix) +
-                                          (fam.is_adversary() ? "|k" + std::to_string(k) : "");
+                                          (fam.is_adversary()
+                                               ? "|k" + std::to_string(k) + "|seed" +
+                                                     std::to_string(seed)
+                                               : "");
                         if (key != cached_key) {
                             std::vector<Key> ints;
                             if (fam.is_adversary()) {
-                                if (!adversary_ints(o, fam.arg, n, k, ints)) {
+                                if (!adversary_ints(o, fam.arg, n, k, seed, ints)) {
                                     std::fprintf(stderr, "skip %s n=%zu (> --max-adv-n)\n", fam.label.c_str(), n);
                                     continue;
                                 }
@@ -323,11 +326,15 @@ static int run_suite(const Options& o, std::ofstream& csv) {
                             double warm_ns = 0;
                             if (o.time)
                                 for (int w = 0; w < o.warmup; ++w)
-                                    warm_ns = timed_run(gen::mix_seed(seed, 777 + w));
+                                    warm_ns = timed_run(fam.is_adversary()
+                                                            ? seed
+                                                            : gen::mix_seed(seed, 777 + w));
                             int reps = (o.time && warm_ns > slow_ns) ? 1 : o.reps;
 
                             for (int r = 0; r < reps; ++r) {
-                                std::uint64_t rs = gen::mix_seed(seed * 7919 + r, ah);
+                                std::uint64_t rs = fam.is_adversary()
+                                                        ? seed
+                                                        : gen::mix_seed(seed * 7919 + r, ah);
                                 long long t_ns = -1, cmps = -1;
                                 std::uint64_t fb = 0;
                                 if (o.time) {

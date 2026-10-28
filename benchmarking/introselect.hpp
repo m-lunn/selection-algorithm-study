@@ -1,7 +1,7 @@
-// introselect.hpp -- quickselect (median-of-3) with a depth limit and a
+// introselect.hpp -- quickselect with a depth limit and a
 // worst-case-linear fallback (Musser-style "introspective" selection).
 //
-// Behaves like qs_m3 until the number of partition rounds exceeds
+// Behaves like randomized quickselect until the number of partition rounds exceeds
 //     depth_mult * log2(n)
 // and then finishes the current range with BFPRT. Gives O(n) worst case with
 // quickselect's typical speed.
@@ -18,6 +18,7 @@
 //
 // Primary author: <name>
 #pragma once
+#include "algorithms/introselect.hpp"
 #include "bfprt.hpp"
 
 namespace sel {
@@ -30,27 +31,10 @@ struct IntroParams {
 
 template <class T, class Less>
 void introselect(T* a, std::size_t n, std::size_t k, const IntroParams& p, Less& less) {
-    if (n < 2) return;
-    idx l = 0, m = static_cast<idx>(n) - 1, kk = static_cast<idx>(k);
-    idx depth = static_cast<idx>(p.depth_mult * std::log2(static_cast<double>(n)));
-    while (l < m) {
-        if (static_cast<std::size_t>(m - l + 1) <= p.cutoff) {
-            insertion_sort(a, l, m, less);
-            return;
-        }
-        if (depth-- <= 0) {
-            ++g_fallbacks;
-            BfprtParams bp;
-            bp.group = p.fallback_group;
-            bp.cutoff = p.cutoff;
-            bfprt_select(a, l, m, kk, bp, less);
-            return;
-        }
-        T x = median_of_3(a[l], a[l + (m - l) / 2], a[m], less);
-        idx i, j;
-        hoare_partition(a, l, m, x, i, j, less);
-        narrow(l, m, kk, i, j);
-    }
+    bool used_fallback = false;
+    algorithms::introselect(a, n, k, p.cutoff, p.depth_mult, p.fallback_group, less,
+                            sel::next_rand(), &used_fallback);
+    if (used_fallback) ++g_fallbacks;
 }
 
 }  // namespace sel

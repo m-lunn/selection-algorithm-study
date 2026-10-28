@@ -1,10 +1,9 @@
 // common.hpp -- primitives shared by every selection algorithm.
 //
-// FAIRNESS DECISION (document this in the report): every algorithm uses the
-// SAME partition routine (a Hoare/Wirth-style two-way partition that stops on
-// elements equal to the pivot) and the SAME small-case cutoff (insertion sort).
-// So differences in the results come from how each algorithm chooses pivots and
-// recurses, not from one of them having a better partition loop.
+// FAIRNESS DECISION (document this in the report): the implemented selection
+// algorithms use the SAME small-case cutoff (insertion sort, 16 by default).
+// Their partition routines remain algorithm-specific; std::nth_element and
+// std::sort are library baselines and do not expose this cutoff.
 //
 // Why Hoare-style and not Lomuto or 3-way?
 //   * Equal elements are swapped and split between both sides, so all-equal
@@ -21,11 +20,8 @@
 // `less` is a strict weak order: less(x, y) -> bool.
 #pragma once
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <utility>
 
 namespace sel {
 
@@ -53,57 +49,5 @@ inline idx rand_in(idx lo, idx hi) {  // inclusive bounds
 // Number of times introselect abandoned quickselect for its fallback.
 // The harness resets this before a counted run and records it in the CSV.
 inline std::uint64_t g_fallbacks = 0;
-
-// --- insertion sort on the inclusive range a[l..m] --------------------------
-template <class T, class Less>
-void insertion_sort(T* a, idx l, idx m, Less& less) {
-    for (idx i = l + 1; i <= m; ++i) {
-        T v = std::move(a[i]);
-        idx j = i - 1;
-        while (j >= l && less(v, a[j])) {
-            a[j + 1] = std::move(a[j]);
-            --j;
-        }
-        a[j + 1] = std::move(v);
-    }
-}
-
-// --- median of three values (<= 3 comparisons) -------------------------------
-template <class T, class Less>
-const T& median_of_3(const T& x, const T& y, const T& z, Less& less) {
-    if (less(x, y)) {
-        if (less(y, z)) return y;
-        return less(x, z) ? z : x;
-    }
-    if (less(x, z)) return x;
-    return less(y, z) ? z : y;
-}
-
-// --- Hoare/Wirth partition of a[l..m] around the pivot VALUE x ---------------
-// x must be a copy of some element currently in a[l..m] (that guarantees the
-// scans below stop inside the range). On return (i, j) satisfy j < i,
-// a[l..j] <= x, a[i..m] >= x, and a[j+1..i-1] (if any) all equal x.
-template <class T, class Less>
-void hoare_partition(T* a, idx l, idx m, const T& x, idx& i_out, idx& j_out,
-                     Less& less) {
-    idx i = l, j = m;
-    do {
-        while (less(a[i], x)) ++i;
-        while (less(x, a[j])) --j;
-        if (i <= j) {
-            std::swap(a[i], a[j]);
-            ++i;
-            --j;
-        }
-    } while (i <= j);
-    i_out = i;
-    j_out = j;
-}
-
-// After partitioning, keep only the side that contains rank k.
-inline void narrow(idx& l, idx& m, idx k, idx i, idx j) {
-    if (j < k) l = i;
-    if (k < i) m = j;
-}
 
 }  // namespace sel

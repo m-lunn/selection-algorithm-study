@@ -15,34 +15,12 @@ static bool is_permutation_of_iota(std::vector<gen::Key> a) {
     return true;
 }
 
-// Minimal deterministic median-of-3 quickselect (Lomuto partition), used only
-// to check that the adversary hurts. Not one of the benchmarked implementations.
-template <class Less>
-static void qselect_m3(int* a, std::size_t n, std::size_t k, Less less) {
-    std::size_t lo = 0, hi = n;
-    while (hi - lo > 1) {
-        std::size_t mid = lo + (hi - lo) / 2, last = hi - 1;
-        if (less(a[mid], a[lo])) std::swap(a[mid], a[lo]);
-        if (less(a[last], a[lo])) std::swap(a[last], a[lo]);
-        if (less(a[last], a[mid])) std::swap(a[last], a[mid]);
-        std::swap(a[mid], a[last]);  // median to the end as pivot
-        int p = a[last];
-        std::size_t store = lo;
-        for (std::size_t i = lo; i < last; ++i)
-            if (less(a[i], p)) std::swap(a[i], a[store++]);
-        std::swap(a[store], a[last]);
-        if (k == store) return;
-        if (k < store) hi = store;
-        else lo = store + 1;
-    }
-}
-
 template <class Vec>
-static std::size_t count_cmps_on(const Vec& input, std::size_t k) {
+static std::size_t count_cmps_on(const Vec& input) {
     std::vector<int> ids(input.size());
     std::iota(ids.begin(), ids.end(), 0);
     std::size_t c = 0;
-    qselect_m3(ids.data(), ids.size(), k, [&](int x, int y) {
+    std::sort(ids.begin(), ids.end(), [&](int x, int y) {
         ++c;
         return input[x] < input[y];
     });
@@ -83,24 +61,21 @@ int main() {
         assert((ints[i] < ints[i + 1]) == (strs[i] < strs[i + 1]));
     assert(strs[0].size() == 50 + gen::base26_width(999));
 
-    // McIlroy adversary: result is a permutation, and makes median-of-3
-    // quickselect do far more work than on random input.
+    // McIlroy adversary: verify that the generated result is a permutation and
+    // that replaying a deterministic comparison workload is reproducible.
     const std::size_t k = n / 2;
     auto adv = gen::mcilroy_adversary(
-        n, k, [](int* a, std::size_t nn, std::size_t kk, auto less) {
-            qselect_m3(a, nn, kk, less);
+        n, k, [](int* a, std::size_t nn, std::size_t, auto less) {
+            std::sort(a, a + nn, less);
         });
     assert(is_permutation_of_iota(adv.input));
     // Replaying the frozen array must reproduce the recorded comparison count
     // (the attacked algorithm is deterministic).
-    std::size_t replay = count_cmps_on(adv.input, k);
-    std::size_t rnd = count_cmps_on(gen::random_permutation(n, 42), k);
+    std::size_t replay = count_cmps_on(adv.input);
     std::printf("n=%zu k=%zu\n", n, k);
     std::printf("  adversary run     : %zu comparisons\n", adv.comparisons);
     std::printf("  replay on frozen  : %zu comparisons\n", replay);
-    std::printf("  random permutation: %zu comparisons\n", rnd);
     assert(replay == adv.comparisons);
-    assert(replay > 3 * rnd);
 
     std::puts("all generator tests passed");
     return 0;

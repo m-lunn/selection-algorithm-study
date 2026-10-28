@@ -17,6 +17,7 @@
 //
 // Primary author: <name>
 #pragma once
+#include "algorithms/floyd-rivest.hpp"
 #include "common.hpp"
 
 namespace sel {
@@ -28,29 +29,8 @@ struct FrParams {
 
 template <class T, class Less>
 void fr_select(T* a, idx l, idx m, idx k, const FrParams& p, Less& less) {
-    while (l < m) {
-        if (static_cast<std::size_t>(m - l + 1) <= p.cutoff) {
-            insertion_sort(a, l, m, less);
-            return;
-        }
-        if (static_cast<std::size_t>(m - l) > p.thr) {
-            const double n = static_cast<double>(m - l + 1);
-            const double i = static_cast<double>(k - l + 1);
-            const double z = std::log(n);
-            const double s = 0.5 * std::exp(2.0 * z / 3.0);
-            const double sd =
-                0.5 * std::sqrt(z * s * (n - s) / n) * ((i - n / 2.0) < 0 ? -1.0 : 1.0);
-            idx nl = std::max(l, static_cast<idx>(k - i * s / n + sd));
-            idx nr = std::min(m, static_cast<idx>(k + (n - i) * s / n + sd));
-            nl = std::min(nl, k);
-            nr = std::max(nr, k);
-            fr_select(a, nl, nr, k, p, less);  // puts a good pivot at a[k]
-        }
-        T x = a[k];
-        idx i, j;
-        hoare_partition(a, l, m, x, i, j, less);
-        narrow(l, m, k, i, j);
-    }
+    algorithms::floyd_rivest(a, static_cast<std::size_t>(l), static_cast<std::size_t>(m),
+                             static_cast<std::size_t>(k), p.thr, p.cutoff, less);
 }
 
 }  // namespace sel

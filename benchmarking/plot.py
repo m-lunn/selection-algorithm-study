@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """plot.py -- turn a bench CSV into plots and summary tables.
 
-    python3 scripts/plot.py results/results.csv --out results/plots
-    python3 scripts/plot.py results/params.csv --out results/plots_bfprt --algos '^bfprt' --tag bfprt
+    python3 benchmarking/plot.py results/results.csv --out results/plots
+    python3 benchmarking/plot.py results/params.csv --out results/plots_bfprt --algos '^bfprt' --tag bfprt
 
 Options:
     --type int|string   which element type to plot (default int)

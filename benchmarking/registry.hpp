@@ -5,7 +5,6 @@
 //   name          keys (defaults)
 //   ------------  ----------------------------------------------------------
 //   qs_random     c=16   (insertion-sort cutoff)
-//   qs_m3         c=16
 //   bfprt         g=5 (group size), c=16
 //   floyd_rivest  c=16, thr=600 (window used when range size > thr)
 //   introselect   c=16, d=2.0 (depth multiplier), fg=5 (fallback group size)
@@ -33,7 +32,7 @@
 
 namespace sel {
 
-enum class Kind { QsRandom, QsM3, Bfprt, FloydRivest, Introselect, StdNth, StdSort };
+enum class Kind { QsRandom, Bfprt, FloydRivest, Introselect, StdNth, StdSort };
 
 struct Algo {
     Kind kind = Kind::StdNth;
@@ -42,14 +41,11 @@ struct Algo {
     double depth = 2.0;
 
     // Deterministic algorithms can be attacked with the McIlroy adversary.
-    bool deterministic() const { return kind != Kind::QsRandom; }
-
     template <class T, class Less>
     void operator()(T* a, std::size_t n, std::size_t k, Less less) const {
         if (n == 0) return;
         switch (kind) {
             case Kind::QsRandom: qs_random(a, n, k, cutoff, less); break;
-            case Kind::QsM3: qs_m3(a, n, k, cutoff, less); break;
             case Kind::Bfprt: {
                 BfprtParams p;
                 p.group = group;
@@ -91,7 +87,6 @@ inline Algo parse_algo(const std::string& spec) {
     a.label = spec;
     const std::string& name = parts[0];
     if (name == "qs_random") a.kind = Kind::QsRandom;
-    else if (name == "qs_m3") a.kind = Kind::QsM3;
     else if (name == "bfprt") a.kind = Kind::Bfprt;
     else if (name == "floyd_rivest") a.kind = Kind::FloydRivest;
     else if (name == "introselect") a.kind = Kind::Introselect;

@@ -13,6 +13,7 @@
 //
 // Primary author: <name>
 #pragma once
+#include "algorithms/bfprt.hpp"
 #include "common.hpp"
 
 namespace sel {
@@ -27,35 +28,9 @@ void bfprt_select(T* a, idx l, idx m, idx k, const BfprtParams& p, Less& less);
 
 // Returns the index (within a[l..m]) of the median of group medians.
 template <class T, class Less>
-idx bfprt_pivot_index(T* a, idx l, idx m, const BfprtParams& p, Less& less) {
-    const idx g = static_cast<idx>(p.group);
-    const idx n = m - l + 1;
-    const idx ng = (n + g - 1) / g;
-    for (idx gi = 0; gi < ng; ++gi) {
-        idx gl = l + gi * g;
-        idx gm = std::min(gl + g - 1, m);
-        insertion_sort(a, gl, gm, less);
-        idx med = gl + (gm - gl) / 2;
-        std::swap(a[l + gi], a[med]);  // collect medians at the front
-    }
-    idx mid = l + (ng - 1) / 2;
-    bfprt_select(a, l, l + ng - 1, mid, p, less);
-    return mid;
-}
-
-template <class T, class Less>
 void bfprt_select(T* a, idx l, idx m, idx k, const BfprtParams& p, Less& less) {
-    while (l < m) {
-        if (static_cast<std::size_t>(m - l + 1) <= p.cutoff) {
-            insertion_sort(a, l, m, less);
-            return;
-        }
-        idx pi = bfprt_pivot_index(a, l, m, p, less);
-        T x = a[pi];
-        idx i, j;
-        hoare_partition(a, l, m, x, i, j, less);
-        narrow(l, m, k, i, j);
-    }
+    algorithms::bfprt(a, static_cast<std::size_t>(l), static_cast<std::size_t>(m),
+                      static_cast<std::size_t>(k), p.group, p.cutoff, less);
 }
 
 }  // namespace sel

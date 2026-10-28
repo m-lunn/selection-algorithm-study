@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "algorithms/registry.hpp"
+#include "registry.hpp"
 #include "generators/generators.hpp"
 #include "generators/mcilroy.hpp"
 #include "generators/string_inputs.hpp"
@@ -41,7 +41,7 @@ static void check(const sel::Algo& algo, const std::vector<T>& in, std::size_t k
 
 int main() {
     const std::vector<std::string> specs = {
-        "qs_random", "qs_random:c=1", "qs_m3", "qs_m3:c=1", "bfprt", "bfprt:g=3",
+        "qs_random", "qs_random:c=1", "bfprt", "bfprt:g=3",
         "bfprt:g=7:c=1", "bfprt:g=9:c=4", "bfprt:g=2:c=1", "floyd_rivest", "floyd_rivest:thr=20:c=1",
         "floyd_rivest:thr=100:c=8", "introselect", "introselect:c=1:d=0.5", "introselect:c=1:d=0",
         "std_nth", "std_sort"};
@@ -81,13 +81,13 @@ int main() {
                     check(a, in, k, name);
     }
 
-    // 3. Frozen McIlroy arrays: attack each deterministic algorithm at n=1500,
+    // 3. Frozen McIlroy arrays: attack each algorithm at a fixed RNG seed,
     //    then replay the frozen array against EVERY algorithm.
     {
         const std::size_t n = 1500, k = n / 2;
         for (auto& target : algos) {
-            if (!target.deterministic() || target.cutoff == 1) continue;
             auto res = gen::mcilroy_adversary(n, k, [&](int* a, std::size_t nn, std::size_t kk, auto less) {
+                sel::seed_rng(123456);
                 target(a, nn, kk, less);
             });
             for (auto& a : algos) check(a, res.input, k, "mcilroy vs " + target.label);
