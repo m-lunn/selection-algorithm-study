@@ -15,6 +15,10 @@ $(BUILD)/gen_test: generators/gen_test.cpp $(HDRS)
 	@mkdir -p $(BUILD)
 	$(CXX) $(CXXFLAGS) -I. $< -o $@
 
+$(BUILD)/show_generators: generators/show_samples.cpp $(HDRS)
+	@mkdir -p $(BUILD)
+	$(CXX) $(CXXFLAGS) -I. $< -o $@
+
 test: benchmarking/test_algorithms.cpp $(HDRS)
 	@mkdir -p $(BUILD)
 	$(CXX) -std=c++17 -O1 -g -Wall -Wextra -fsanitize=address,undefined -I. $< -o $(BUILD)/test_algorithms

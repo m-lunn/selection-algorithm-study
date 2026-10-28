@@ -96,7 +96,7 @@ inline std::vector<Key> few_distinct(std::size_t n, std::size_t d,
 }
 
 // Organ pipe: 0,1,2,...,peak,...,2,1,0 (each value except the peak appears
-// twice). Classic breaker of first/last/middle pivot rules.
+// twice).
 inline std::vector<Key> organ_pipe(std::size_t n) {
     std::vector<Key> a(n);
     for (std::size_t i = 0; i < n; ++i)
