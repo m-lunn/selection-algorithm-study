@@ -15,6 +15,7 @@ Options:
 Outputs (PNG + CSV) in --out:
     <tag>time_vs_n.png       ns per element vs n, one panel per input family
     <tag>cmps_vs_n.png       comparisons per element vs n (dotted lines at 1.5 and 2)
+    <tag>fallbacks_vs_n.png   introselect BFPRT fallback activations vs n
     <tag>rank_sweep.png      ns per element by target rank at the largest n
     <tag>time_vs_cmps.png    ns per element vs comparisons per element (largest n)
     <tag>strings_prefix.png  (string runs) time and ns/comparison vs prefix length
@@ -84,9 +85,36 @@ def vs_n_plot(agg, colors, ylabel, fname, refs=(), logy=True):
         ax.set_xscale("log")
         if logy:
             ax.set_yscale("log")
-        ax.set_title(fam, fontsize=10)
         ax.set_xlabel("n")
         ax.set_ylabel(ylabel)
+        ax.grid(alpha=0.25)
+    for ax in axes[len(fams):]:
+        ax.axis("off")
+    h, l = axes[0].get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", ncol=min(len(l), 5), fontsize=8)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
+    fig.savefig(fname, dpi=150)
+    plt.close(fig)
+
+
+def fallbacks_vs_n_plot(agg, colors, fname):
+    fams = sorted(agg["family"].unique())
+    if not fams:
+        return
+    fig, axes = panels(fams)
+    for ax, fam in zip(axes, fams):
+        sub = agg[agg["family"] == fam]
+        for algo, g in sub.groupby("algo"):
+            g = g.sort_values("n")
+            ax.plot(g["n"], g["med"], marker="o", ms=3, lw=1.3,
+                    label=algo, color=colors[algo])
+            ax.fill_between(g["n"], g["lo"], g["hi"],
+                            color=colors[algo], alpha=0.15, lw=0)
+        ax.set_xscale("log")
+        ax.set_title(fam, fontsize=10)
+        ax.set_xlabel("n")
+        ax.set_ylabel("introselect BFPRT fallbacks")
+        ax.set_title(f"{fam} (introselect only)", fontsize=10)
         ax.grid(alpha=0.25)
     for ax in axes[len(fams):]:
         ax.axis("off")
@@ -222,6 +250,7 @@ def main():
         raise SystemExit("no rows match the filters")
     t_all = aggregate(df, "time_ns") if (df["time_ns"] >= 0).any() else pd.DataFrame()
     c_all = aggregate(df, "comparisons") if (df["comparisons"] >= 0).any() else pd.DataFrame()
+    f_all = aggregate(df, "fallbacks") if (df["fallbacks"] >= 0).any() else pd.DataFrame()
     colors = color_map(df["algo"].unique())
     out = lambda f: os.path.join(args.out, tag + f)
 
@@ -236,6 +265,10 @@ def main():
         c = at_prefix(c_all)
         vs_n_plot(c[c["rank"] == args.rank], colors, "comparisons per element",
                   out("cmps_vs_n.png"), refs=(1.5, 2.0))
+    if not f_all.empty:
+        f = at_prefix(f_all)
+        f = f[f["algo"].str.match(r"^introselect(?:$|:)")]
+        fallbacks_vs_n_plot(f[f["rank"] == args.rank], colors, out("fallbacks_vs_n.png"))
     if not t_all.empty and not c_all.empty:
         time_vs_cmps_plot(at_prefix(t_all), at_prefix(c_all), colors, args.rank, out("time_vs_cmps.png"))
         if args.type == "string":

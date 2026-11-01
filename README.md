@@ -136,6 +136,7 @@ The plot directory contains PNG charts and summary CSV files, including:
 ```text
 time_vs_n.png
 cmps_vs_n.png
+fallbacks_vs_n.png
 time_vs_cmps.png
 rank_sweep.png
 summary_time.csv
@@ -159,6 +160,8 @@ algo,type,family,n,seed,prefix,rank,k,rep,time_ns,comparisons,fallbacks,input_ha
 - `comparisons` comes from a separate counted run and does not add comparator
   overhead to the timing.
 - `fallbacks` records BFPRT fallback activations for introselect.
+- `fallbacks_vs_n.png` plots those activations for introselect (including
+  introselect parameter variants) only; other algorithms are excluded.
 - `input_hash` lets you verify that algorithms received the same input instance
   for each family, size, seed, prefix, and rank.
 
