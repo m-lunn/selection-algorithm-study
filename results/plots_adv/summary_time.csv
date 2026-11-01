@@ -1,0 +1,6 @@
+family,bfprt,floyd_rivest,introselect,qs_random,std_nth
+mcilroy:bfprt,10.685,1.385,1.136,1.159,0.888
+mcilroy:floyd_rivest,10.22,59.967,1.117,1.147,0.908
+mcilroy:introselect,10.111,1.415,20.917,10.777,0.866
+mcilroy:qs_random,15.555,2.281,25.554,5543.616,3.844
+mcilroy:std_nth,11.759,1.429,0.64,0.64,5522.305

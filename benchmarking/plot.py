@@ -85,6 +85,7 @@ def vs_n_plot(agg, colors, ylabel, fname, refs=(), logy=True):
         ax.set_xscale("log")
         if logy:
             ax.set_yscale("log")
+        ax.set_title(f"Input family: {fam}", fontsize=10)
         ax.set_xlabel("n")
         ax.set_ylabel(ylabel)
         ax.grid(alpha=0.25)
@@ -111,10 +112,9 @@ def fallbacks_vs_n_plot(agg, colors, fname):
             ax.fill_between(g["n"], g["lo"], g["hi"],
                             color=colors[algo], alpha=0.15, lw=0)
         ax.set_xscale("log")
-        ax.set_title(fam, fontsize=10)
         ax.set_xlabel("n")
         ax.set_ylabel("introselect BFPRT fallbacks")
-        ax.set_title(f"{fam} (introselect only)", fontsize=10)
+        ax.set_title(f"Input family: {fam} (introselect only)", fontsize=10)
         ax.grid(alpha=0.25)
     for ax in axes[len(fams):]:
         ax.axis("off")
@@ -141,7 +141,7 @@ def rank_sweep_plot(t, colors, fname):
         ax.set_xticks(range(len(ranks)))
         ax.set_xticklabels(ranks, fontsize=8)
         ax.set_yscale("log")
-        ax.set_title(f"{fam} (n={int(nmax):,})", fontsize=10)
+        ax.set_title(f"Input family: {fam} (n={int(nmax):,})", fontsize=10)
         ax.set_ylabel("ns per element")
         ax.grid(alpha=0.25)
     for ax in axes[len(fams):]:
@@ -172,7 +172,7 @@ def time_vs_cmps_plot(t, c, colors, rank, fname):
     ax.set_yscale("log")
     ax.set_xlabel("comparisons per element")
     ax.set_ylabel("ns per element")
-    ax.set_title(f"Time vs comparisons at largest n (rank={rank})\ncolour = algorithm, marker = family")
+    ax.set_title(f"Time vs comparisons at largest n (rank={rank})\ncolour = algorithm, marker = input family")
     ax.grid(alpha=0.25)
     algo_h = [plt.Line2D([], [], marker="o", ls="", color=colors[a], label=a) for a in sorted(colors)]
     fam_h = [plt.Line2D([], [], marker=markers[i % len(markers)], ls="", color="k", label=f)
@@ -202,7 +202,7 @@ def strings_plot(t, c, colors, fname):
             gg = g.set_index("prefix")["med"]
             both = pd.concat([gg, cc], axis=1, keys=["t", "c"]).dropna()
             axes[1][j].plot(both.index + 1, both["t"] / both["c"], marker="o", ms=3, color=colors[algo])
-        axes[0][j].set_title(f"{fam} (n={int(nmax):,})", fontsize=10)
+        axes[0][j].set_title(f"Input family: {fam} (n={int(nmax):,})", fontsize=10)
         axes[0][j].set_ylabel("ns per element")
         axes[1][j].set_ylabel("ns per comparison")
         for i in (0, 1):

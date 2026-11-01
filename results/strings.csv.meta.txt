@@ -1,0 +1,9 @@
+date: Mon Nov  2 09:38:14 2026
+command: build/bench --type string --reps 11 --seeds 2 --out results/strings.csv --families random,sorted,reverse,all_equal,organ_pipe,few_distinct:2,few_distinct:100,sawtooth:100,nearly_sorted:0.01 --sizes 1e4,1e5 --ranks median --prefixes 0,16,64,256,1024 --algos qs_random,bfprt,floyd_rivest,introselect,std_nth
+cpu: unknown
+hardware_threads: 8
+pinned_core: -1
+compiler: Apple LLVM 17.0.0 (clang-1700.0.13.5)
+flags: -std=c++17 -O2 -Wall -Wextra
+sizeof(Key): 8
+---
