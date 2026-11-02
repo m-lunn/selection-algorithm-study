@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 
 RANK_ORDER = ["min", "p1", "p25", "median", "p75", "p99", "max"]
+COMPARISON_REFERENCE_LINES = (1.5, 2.0)
 
 
 def load(args):
@@ -81,7 +82,8 @@ def vs_n_plot(agg, colors, ylabel, fname, refs=(), logy=True):
             ax.fill_between(g["n"], g["lo"] / g["n"], g["hi"] / g["n"],
                             color=colors[algo], alpha=0.15, lw=0)
         for r in refs:
-            ax.axhline(r, ls=":", color="gray", lw=0.8)
+            ax.axhline(r, ls=":", color="gray", lw=0.8,
+                       label=f"reference: {r:g}")
         ax.set_xscale("log")
         if logy:
             ax.set_yscale("log")
@@ -226,6 +228,12 @@ def summaries(t, c, rank, outdir, tag):
         piv = s.pivot_table(index="family", columns="algo", values="med")
         piv = piv.div(s.groupby("family")["n"].first(), axis=0)  # per element
         piv.round(3).to_csv(os.path.join(outdir, f"{tag}summary_{name}.csv"))
+        if "random" in piv.index:
+            baseline = piv.loc["random"]
+            multipliers = piv.div(baseline, axis=1)
+            multipliers.round(3).to_csv(
+                os.path.join(outdir, f"{tag}summary_{name}_vs_random.csv")
+            )
         print(f"\n== {name} per element at largest n, rank={rank} "
               f"({'ns' if name == 'time' else 'comparisons'}) ==")
         print(piv.round(2).to_string())
@@ -264,7 +272,7 @@ def main():
     if not c_all.empty:
         c = at_prefix(c_all)
         vs_n_plot(c[c["rank"] == args.rank], colors, "comparisons per element",
-                  out("cmps_vs_n.png"), refs=(1.5, 2.0))
+                  out("cmps_vs_n.png"), refs=COMPARISON_REFERENCE_LINES)
     if not f_all.empty:
         f = at_prefix(f_all)
         f = f[f["algo"].str.match(r"^introselect(?:$|:)")]

@@ -141,6 +141,8 @@ time_vs_cmps.png
 rank_sweep.png
 summary_time.csv
 summary_cmps.csv
+summary_time_vs_random.csv
+summary_cmps_vs_random.csv
 ```
 
 ## Understanding benchmark rows
