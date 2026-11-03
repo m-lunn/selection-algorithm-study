@@ -1,3 +1,4 @@
+// Primary author: Michael Lunn
 #include "bfprt.hpp"
 
 #include <vector>

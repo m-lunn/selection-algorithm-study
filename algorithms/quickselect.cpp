@@ -1,3 +1,4 @@
+// Primary author: Michael Lunn
 #include "quickselect.hpp"
 
 #include <vector>

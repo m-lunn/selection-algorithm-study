@@ -15,7 +15,7 @@
 // Parameters: thr (windowing is used only when range size > thr; the original
 // uses 600), cutoff (insertion sort below this size).
 //
-// Primary author: <name>
+// Primary author: Ben Hood
 #pragma once
 #include "algorithms/floyd-rivest.hpp"
 #include "common.hpp"

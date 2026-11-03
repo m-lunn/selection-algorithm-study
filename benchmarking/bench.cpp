@@ -5,7 +5,7 @@
 //
 // Build:  make            Run: ./build/bench --help
 //
-// Primary author: <name>
+// Primary author: Michael Lunn
 #include <atomic>
 #include <chrono>
 #include <cstdint>

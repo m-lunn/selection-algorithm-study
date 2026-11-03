@@ -1,6 +1,6 @@
 // quickselect.hpp -- randomized quickselect adapter.
 //
-// Primary author: <name>
+// Primary author: Michael Lunn
 #pragma once
 #include "algorithms/quickselect.hpp"
 #include "common.hpp"

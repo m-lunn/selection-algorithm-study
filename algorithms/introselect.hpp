@@ -1,3 +1,4 @@
+// Primary author: Michael Lunn
 #pragma once
 
 #include <algorithm>

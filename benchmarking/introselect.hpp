@@ -16,7 +16,7 @@
 //
 // Parameters: cutoff, depth_mult (default 2.0), fallback group size.
 //
-// Primary author: <name>
+// Primary author: Michael Lunn
 #pragma once
 #include "algorithms/introselect.hpp"
 #include "bfprt.hpp"

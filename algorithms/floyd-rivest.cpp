@@ -1,3 +1,4 @@
+// Primary author: Ben Hood
 #include "floyd-rivest.hpp"
 
 #include <vector>

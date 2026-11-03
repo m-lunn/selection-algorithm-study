@@ -1,3 +1,4 @@
+// Primary author: Ben Hood
 #pragma once
 
 #include <algorithm>

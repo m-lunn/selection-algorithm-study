@@ -11,7 +11,7 @@
 // Parameters: group (g, >= 2; odd is the sensible choice), cutoff (insertion
 // sort below this size).
 //
-// Primary author: <name>
+// Primary author: Michael Lunn
 #pragma once
 #include "algorithms/bfprt.hpp"
 #include "common.hpp"
