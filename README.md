@@ -5,6 +5,15 @@ zero-based rank `k` without fully sorting the input. It measures wall-clock
 time and comparator calls on integer, string, duplicate-heavy, structured, and
 McIlroy adversarial inputs.
 
+## Submission contents
+
+| Component | Where to find it |
+|---|---|
+| Report | [PA2 Report - Selection Algorithms.pdf](PA2%20Report%20-%20Selection%20Algorithms.pdf) |
+| Video | https://youtu.be/1amoLIl55ZI |
+| Individual reflections | [Ben Hood](Reflections/Individual%20reflection%20-%20Benjamin%20Hood.pdf) · [Michael Lunn](Reflections/Individual%20reflection%20-%20Michael%20Lunn.pdf) |
+
+
 ## Algorithms
 
 The benchmark uses the canonical implementations under `algorithms/`:
