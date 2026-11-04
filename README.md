@@ -71,8 +71,7 @@ all generator tests passed
 
 ## Inspect generator samples
 
-Print reproducible examples from every ordinary generator, strings, and a
-known-seed McIlroy adversary:
+Print reproducible examples from every ordinary generator, strings, and a known-seed McIlroy adversary:
 
 ```bash
 ./generators/show_samples.sh
