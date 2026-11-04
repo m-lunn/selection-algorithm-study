@@ -31,7 +31,9 @@ void floyd_rivest(T* a, std::size_t left, std::size_t right, std::size_t k,
                 std::max(left_signed, std::min(right_signed, nl_value)));
             const std::size_t nr = static_cast<std::size_t>(
                 std::max(left_signed, std::min(right_signed, nr_value)));
-            floyd_rivest(a, nl, nr, k, threshold, cutoff, less);
+            if (nr - nl < right - left) {// window must be smaller, or the recursion never ends
+                floyd_rivest(a, nl, nr, k, threshold, cutoff, less);
+            }
         }
         const T pivot = a[k];
         std::ptrdiff_t i, j;
